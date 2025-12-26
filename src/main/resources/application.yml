@@ -11,3 +11,7 @@ server:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+
+
+file:
+  upload-path: D:/IDEAproject/repair_uploads/order/

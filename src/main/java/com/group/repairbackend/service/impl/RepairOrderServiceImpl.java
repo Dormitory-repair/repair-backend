@@ -3,21 +3,26 @@ package com.group.repairbackend.service.impl;
 import com.group.repairbackend.mapper.RepairOrderMapper;
 import com.group.repairbackend.model.RepairOrder;
 import com.group.repairbackend.service.RepairOrderService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import javax.annotation.Resource;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class RepairOrderServiceImpl implements RepairOrderService {
+
     @Resource
     private RepairOrderMapper repairOrderMapper;
 
-    private static final String UPLOAD_DIR = "D:/IDEAproject/repair_uploads/order/";
+
+    @Value("${file.upload-path}")
+    private String uploadDir;
+
     @Override
     public void addOrder(
             String reporterAccount,
@@ -38,9 +43,13 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         // 2. 处理图片
         String imagePaths = null;
         if (images != null && images.length > 0) {
+
             StringBuilder sb = new StringBuilder();
-            File dir = new File(UPLOAD_DIR);
-            if (!dir.exists()) dir.mkdirs();
+
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
 
             for (MultipartFile file : images) {
                 if (file.isEmpty()) continue;
@@ -48,7 +57,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                 String originalName = file.getOriginalFilename();
                 if (originalName == null) continue;
 
-                // 安全处理文件名work_type
+                // 文件名安全处理
                 String safeName = originalName.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
                 String fileName = UUID.randomUUID() + "_" + safeName;
 
@@ -56,17 +65,17 @@ public class RepairOrderServiceImpl implements RepairOrderService {
                 try {
                     file.transferTo(dest);
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new RuntimeException("图片上传失败: " + e.getMessage());
+                    throw new RuntimeException("图片上传失败", e);
                 }
 
+                // 数据库存的是前端可访问路径
                 sb.append("/upload/order/").append(fileName).append(",");
             }
+
             if (sb.length() > 0) {
                 imagePaths = sb.substring(0, sb.length() - 1);
             }
         }
-
 
         // 3. 插入数据库
         repairOrderMapper.insertOrder(
@@ -85,6 +94,7 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         );
     }
 
+    @Override
     public List<RepairOrder> getOrdersByAccount(String account) {
         return repairOrderMapper.getOrdersByAccount(account);
     }
