@@ -1,7 +1,11 @@
 package com.group.repairbackend.controller;
 
 import com.group.repairbackend.model.Result;
+import com.group.repairbackend.model.Stu;
 import com.group.repairbackend.service.StuService;
+import com.group.repairbackend.utils.JwtUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,8 +42,30 @@ public class StuController {
             return Result.error("账号或密码不能为空");
         }
 
-        return stuService.login(account, password);
+        // 1. 调用 service 登录
+        Result loginResult = stuService.login(account, password);
+
+        // 2. 登录失败直接返回
+        if (loginResult.getCode() != 1) {
+            return loginResult;
+        }
+
+        // 3. 登录成功，取出学生信息
+        Stu stu = (Stu) loginResult.getData();
+
+        // 4. 生成 JWT（不放 role）
+        Claims claims = Jwts.claims();
+        claims.put("id", stu.getId());
+        claims.put("account", stu.getAccount());
+
+        String token = JwtUtil.generateToken(claims);
+
+        // 5. 返回 token
+        Result result = Result.success("学生登录成功");
+        result.setData(token);
+        return result;
     }
+
 
     // 获取学生列表
     @GetMapping("/list")

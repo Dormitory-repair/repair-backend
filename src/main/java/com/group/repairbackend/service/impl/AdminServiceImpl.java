@@ -81,8 +81,8 @@ public class AdminServiceImpl implements AdminService {
         }
 
         // 查询学生
-        Stu stu = adminMapper.selectByAccount(account);
-        if (stu == null) {
+        Admin admin = adminMapper.selectByAccount(account);
+        if (admin == null) {
             return Result.error("账号不存在");
         }
 
@@ -92,13 +92,13 @@ public class AdminServiceImpl implements AdminService {
         );
 
         // 校验密码
-        if (!encryptedPassword.equals(stu.getPassword())) {
+        if (!encryptedPassword.equals(admin.getPassword())) {
             return Result.error("密码错误");
         }
 
         // 登录成功（可返回学生信息，密码置空）
-        stu.setPassword(null);
-        return Result.success("登录成功", stu);
+        admin.setPassword(null);
+        return Result.success("登录成功", admin);
     }
 
     public List<Map<String, Object>> getAllAdmins() {

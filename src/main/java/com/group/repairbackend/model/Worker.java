@@ -10,7 +10,9 @@ public class Worker {
 
     private Integer id;
 
-    private String name;        // 姓名(员工ID）
+    private String name;        // 姓名
+
+    private String workerCode;    // 员工工号（唯一，如"W10023"）
 
     private String password;    // 密码
 

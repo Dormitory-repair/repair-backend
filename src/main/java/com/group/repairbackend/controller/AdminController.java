@@ -1,7 +1,11 @@
 package com.group.repairbackend.controller;
 
+import com.group.repairbackend.model.Admin;
 import com.group.repairbackend.model.Result;
 import com.group.repairbackend.service.AdminService;
+import com.group.repairbackend.utils.JwtUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +33,7 @@ public class AdminController {
     }
 
     @PostMapping("/loginadmin")
-    public Result login(@RequestBody Map<String, String> data) {
+    public Result loginAdmin(@RequestBody Map<String, String> data) {
 
         String account = data.get("account");
         String password = data.get("password");
@@ -38,8 +42,25 @@ public class AdminController {
             return Result.error("账号或密码不能为空");
         }
 
-        return adminService.login(account, password);
+        Result loginResult = adminService.login(account, password);
+
+        if (loginResult.getCode() != 1) {
+            return loginResult;
+        }
+
+        Admin admin = (Admin) loginResult.getData();
+
+        Claims claims = Jwts.claims();
+        claims.put("id", admin.getId());
+        claims.put("account", admin.getAccount());
+
+        String token = JwtUtil.generateToken(claims);
+
+        Result result = Result.success("管理员登录成功");
+        result.setData(token);
+        return result;
     }
+
 
     @GetMapping("/listadmin")
     public Result getAdminList() {

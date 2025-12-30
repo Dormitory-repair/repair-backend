@@ -7,8 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class RepairBackendApplicationTests {
 
     @Test
-    void test() {
-        System.out.println("test");
+    void contextLoads() {
     }
 
 }

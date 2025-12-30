@@ -20,7 +20,7 @@ public interface AdminMapper {
 
     @Select("SELECT id, account, password, created_time " +
             "FROM admin WHERE account = #{account}")
-    Stu selectByAccount(@Param("account") String account);
+    Admin selectByAccount(@Param("account") String account);
 
     @Select("SELECT * FROM admin ORDER BY id ASC")
     List<Map<String, Object>> getAllAdmins();
