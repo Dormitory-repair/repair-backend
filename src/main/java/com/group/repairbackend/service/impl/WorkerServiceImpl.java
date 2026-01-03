@@ -130,6 +130,8 @@ public class WorkerServiceImpl implements WorkerService {
 
     @Override
     public Result login(String workerCode, String password) {
+        System.out.println("WorkerService.login called: " + workerCode);
+
         if (StringUtils.isAnyBlank(workerCode, password)) {
             return Result.error("用户名和密码不能为空");
         }
@@ -144,25 +146,29 @@ public class WorkerServiceImpl implements WorkerService {
             return Result.error("工号或密码错误");
         }
 
+        System.out.println("Found worker: " + worker.getName());
+        System.out.println("Stored password: " + worker.getPassword());
+        System.out.println("Input password: " + password);
+
         // 移除密码等敏感信息
         worker.setPassword(null);
         return Result.success("登录成功", worker);
     }
 
-    // 添加测试方法
-    @PostConstruct
-    public void init() {
-        System.out.println("====================================");
-        System.out.println("密码加密测试:");
-        String testPassword = "123456";
-        String encrypted = DigestUtils.md5DigestAsHex(
-                (SALT + testPassword).getBytes(StandardCharsets.UTF_8)
-        );
-        System.out.println("SALT: " + SALT);
-        System.out.println("明文密码: " + testPassword);
-        System.out.println("加密结果: " + encrypted);
-        System.out.println("====================================");
-    }
+//    // 添加测试方法
+//    @PostConstruct
+//    public void init() {
+//        System.out.println("====================================");
+//        System.out.println("密码加密测试:");
+//        String testPassword = "123456";
+//        String encrypted = DigestUtils.md5DigestAsHex(
+//                (SALT + testPassword).getBytes(StandardCharsets.UTF_8)
+//        );
+//        System.out.println("SALT: " + SALT);
+//        System.out.println("明文密码: " + testPassword);
+//        System.out.println("加密结果: " + encrypted);
+//        System.out.println("====================================");
+//    }
 
 
     @Override

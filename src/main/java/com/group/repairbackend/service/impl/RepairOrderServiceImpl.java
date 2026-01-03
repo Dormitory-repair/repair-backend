@@ -11,10 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -112,12 +109,6 @@ public class RepairOrderServiceImpl implements RepairOrderService {
         return repairOrderMapper.selectAcceptedOrders(workerId);
     }
 
-//    @Override
-//    public List<Map<String, Object>> getOrderHistory(Integer workerId) {
-//        return repairOrderMapper.selectOrderHistory(workerId,status);
-//    }
-
-    // RepairOrderServiceImpl.java 修改getOrderHistory方法
     @Override
     public List<Map<String, Object>> getOrderHistory(Integer workerId, String status) {
         // 先获取所有历史订单
@@ -213,8 +204,50 @@ public class RepairOrderServiceImpl implements RepairOrderService {
 
     @Override
     public Map<String, Object> getOrderDetail(String orderId) {
-        return repairOrderMapper.selectOrderById(orderId);
+        Map<String, Object> order = repairOrderMapper.selectOrderById(orderId);
+
+        if (order == null) {
+            return null;  // 或返回空Map：return new HashMap<>();
+        }
+
+        // 处理图片路径，将数据库中的逗号分隔字符串转为数组
+        String imagePathsStr = (String) order.get("image_paths");
+        if (imagePathsStr != null && !imagePathsStr.trim().isEmpty()) {
+            // 分割图片路径字符串为数组
+            String[] imagePaths = imagePathsStr.split(",");
+
+            // 可以在这里处理为完整的URL（如果需要）
+            List<String> imageUrls = new ArrayList<>();
+            for (String path : imagePaths) {
+                // 移除可能的空格
+                String trimmedPath = path.trim();
+                if (!trimmedPath.isEmpty()) {
+                    // 添加完整URL路径（根据你的项目配置调整）
+                    String fullUrl = "/upload/order/" + trimmedPath;
+                    imageUrls.add(fullUrl);
+                }
+            }
+            order.put("images", imageUrls); // 添加图片数组到返回结果
+        } else {
+            order.put("images", new ArrayList<>()); // 如果没有图片，返回空数组
+        }
+
+        // 添加状态描述
+        Integer isAccepted = (Integer) order.get("is_accepted");
+        Integer isCompleted = (Integer) order.get("is_completed");
+
+        String statusText = "待接单";
+        if (isAccepted != null && isAccepted == 1) {
+            statusText = "已接单";
+            if (isCompleted != null && isCompleted == 1) {
+                statusText = "已完成";
+            }
+        }
+        order.put("status_text", statusText);
+
+        return order;
     }
+
 
     @Override
     public Map<String, Object> getWorkerStats(Integer workerId) {

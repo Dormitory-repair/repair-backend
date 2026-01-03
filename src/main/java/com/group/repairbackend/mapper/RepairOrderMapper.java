@@ -36,9 +36,9 @@ public interface RepairOrderMapper {
     );
 
     @Select("SELECT " +
-            "reporter_account, reporter_name, reporter_phone, " +
+            "order_id, reporter_account, reporter_name, reporter_phone, " +
             "living_area, building, room_number, repair_category, specific_item, problem_description, " +
-            "repair_images, is_completed, repair_time, completed_time " +
+            "repair_images, worker_id, is_accepted, is_completed, repair_time, accepted_time, completed_time " +
             "FROM repair_order " +
             "WHERE reporter_account = #{account} " +
             "ORDER BY repair_time DESC")

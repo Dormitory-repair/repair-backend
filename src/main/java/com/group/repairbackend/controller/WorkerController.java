@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,26 +78,33 @@ public class WorkerController {
     }
 
     @PostMapping("/worker/login")
-    public Result login(@RequestBody Map<String, String> data,HttpSession session) {
+    public Result login(@RequestBody Map<String, String> data) {
         String workerCode = data.get("workerCode");
         String password = data.get("password");
 
-        if (StringUtils.isEmpty(workerCode) || StringUtils.isEmpty(password)) {
+        if (workerCode == null || workerCode.trim().isEmpty() ||
+                password == null || password.trim().isEmpty()) {
             return Result.error("工号和密码不能为空");
         }
 
         Result result = workerService.login(workerCode, password);
-        // 设置session
+        // 如果登录成功，生成JWT Token
         if (result.getCode() == 1 && result.getData() != null) {
             Worker worker = (Worker) result.getData();
+
+            // 创建JWT Claims
             Claims claims = Jwts.claims();
             claims.put("workerId", worker.getId());
             claims.put("workerCode", worker.getWorkerCode());
             claims.put("name", worker.getName());
             claims.put("phone", worker.getPhone());
             claims.put("workType", worker.getWorkType());
-            // 生成 JWT Token
+            // 可以添加角色信息，如果需要的话
+            // claims.put("role", worker.getRole());
+
+            // 生成JWT Token
             String token = JwtUtil.generateToken(claims);
+
             // 创建返回数据
             Map<String, Object> returnData = new HashMap<>();
             returnData.put("token", token);
@@ -107,55 +113,50 @@ public class WorkerController {
             return Result.success("登录成功", returnData);
         }
 
-
+        // 如果登录失败，直接返回Service的结果
         return result;
+
     }
 
-
-    // 获取个人信息
-    @GetMapping("/worker/profile")
-    public Result getProfile(HttpSession session) {
-        Integer workerId = (Integer) session.getAttribute("workerId");
+    @GetMapping("/profile")
+    public Result getProfile(@RequestParam Integer workerId) {
         if (workerId == null) {
-            return Result.error("请先登录");
+            return Result.error("workerId不能为空");
         }
-
         return workerService.getWorkerProfile(workerId);
     }
 
-    // 更新个人信息
-    @PostMapping("/worker/profile/update")
-    public Result updateProfile(@RequestBody Map<String, String> data, HttpSession session) {
-        Integer workerId = (Integer) session.getAttribute("workerId");
-        if (workerId == null) {
-            return Result.error("请先登录");
-        }
+    @PostMapping("/profile/update")
+    public Result updateProfile(@RequestBody Map<String, Object> data) {
+        Integer workerId = (Integer) data.get("workerId");
+        String phone = (String) data.get("phone");
+        String workType = (String) data.get("workType");
 
-        String phone = data.get("phone");
-        String workType = data.get("workType");
+        if (workerId == null) {
+            return Result.error("workerId不能为空");
+        }
 
         return workerService.updateProfile(workerId, phone, workType);
     }
 
-    // 修改密码
-    @PostMapping("/worker/change-password")
-    public Result changePassword(@RequestBody Map<String, String> data, HttpSession session) {
-        Integer workerId = (Integer) session.getAttribute("workerId");
-        if (workerId == null) {
-            return Result.error("请先登录");
-        }
-
+    @PostMapping("/change-password")
+    public Result changePassword(@RequestBody Map<String, String> data) {
+        Integer workerId = Integer.parseInt(data.get("workerId"));
         String oldPassword = data.get("oldPassword");
         String newPassword = data.get("newPassword");
         String confirmPassword = data.get("confirmPassword");
 
+        if (workerId == null) {
+            return Result.error("workerId不能为空");
+        }
+
         return workerService.changePassword(workerId, oldPassword, newPassword, confirmPassword);
     }
 
-    // 退出登录
-    @PostMapping("/worker/logout")
-    public Result logout(HttpSession session) {
-        session.invalidate();
+    @PostMapping("/logout")
+    public Result logout() {
+
         return Result.success("退出成功");
     }
+
 }

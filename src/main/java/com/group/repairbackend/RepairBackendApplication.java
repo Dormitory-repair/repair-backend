@@ -9,6 +9,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 public class RepairBackendApplication {
 
     public static void main(String[] args) {
+
         SpringApplication.run(RepairBackendApplication.class, args);
     }
 

@@ -18,21 +18,22 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("token")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("*");
-        config.setAllowCredentials(true);
-        config.addAllowedMethod("*");
-        config.addAllowedHeader("*");
-        config.addExposedHeader("token");
-        config.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
+//    @Bean
+//    public CorsFilter corsFilter() {
+//        CorsConfiguration config = new CorsConfiguration();
+//        config.addAllowedOriginPattern("*");
+//        config.setAllowCredentials(true);
+//        config.addAllowedMethod("*");
+//        config.addAllowedHeader("*");
+//        config.addExposedHeader("token");
+//        config.setMaxAge(3600L);
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", config);
+//        return new CorsFilter(source);
+//    }
 }
